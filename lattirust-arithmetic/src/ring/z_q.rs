@@ -386,6 +386,8 @@ impl<'a, C: ZqConfig<L>, const L: usize> core::ops::SubAssign<&'a mut Self> for 
 
 impl<'a, C: ZqConfig<L>, const L: usize> MulAssign<&'a Self> for Zq<C, L> {
     fn mul_assign(&mut self, other: &Self) {
+        // let backtrace = std::backtrace::Backtrace::capture();
+        // println!("C mul_assign Backtrace:\n{}", backtrace);
         C::mul_assign(self, other)
     }
 }
@@ -461,6 +463,8 @@ impl<'a, C: ZqConfig<L>, const L: usize> core::iter::Product<&'a Self> for Zq<C,
 impl<C: ZqConfig<L>, const L: usize> core::ops::MulAssign<Self> for Zq<C, L> {
     #[inline(always)]
     fn mul_assign(&mut self, other: Self) {
+        // let backtrace = std::backtrace::Backtrace::capture();
+        // println!("3 mul_assign Backtrace:\n{}", backtrace);
         self.mul_assign(&other)
     }
 }
@@ -477,6 +481,8 @@ impl<'a, C: ZqConfig<L>, const L: usize> core::ops::DivAssign<&'a mut Self> for 
 impl<'a, C: ZqConfig<L>, const L: usize> core::ops::MulAssign<&'a mut Self> for Zq<C, L> {
     #[inline(always)]
     fn mul_assign(&mut self, other: &'a mut Self) {
+        let backtrace = std::backtrace::Backtrace::capture();
+        println!("4 mul_assign Backtrace:\n{}", backtrace);
         self.mul_assign(&*other)
     }
 }
@@ -649,6 +655,8 @@ macro_rules! zq_config_impl {
                 }
 
                 fn mul_assign(a: &mut Zq<Self, $L>, b: &Zq<Self, $L>) {
+                    // let backtrace = std::backtrace::Backtrace::capture();
+                    // println!("5 mul_assign Backtrace:\n{}", backtrace);
                     $(Self::[< FConfig $i >]::mul_assign(&mut a.0.$i, &b.0.$i);)*
                 }
 
