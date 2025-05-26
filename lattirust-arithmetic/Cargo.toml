@@ -21,6 +21,7 @@ nalgebra = { version = "0.33.2", features = ["serde-serialize", "rayon"] }
 nalgebra-sparse = "0.10.0"
 nimue = "0.1.0"
 num-traits = "0.2.19"
+nvtx = "*"
 paste = "1.0.15"
 rayon = "1.10.0"
 rounded-div = "0.1.2"

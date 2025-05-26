@@ -1,6 +1,7 @@
 use num_bigint::BigUint;
 use num_traits::{One, ToPrimitive, Zero};
 use rayon::prelude::*;
+use crate::{nvtx_timed, nvtx_timed_pop};
 
 use crate::decomposition::pad_zeros;
 use crate::linear_algebra::{Matrix, RowVector, Vector};
@@ -33,6 +34,7 @@ where
     R: Ring + WithSignedRepresentative,
     R::SignedRepresentative: DecompositionFriendlySignedRepresentative,
 {
+    // nvtx_timed!("decompose1");
     assert!(
         !basis.is_zero() && !basis.is_one(),
         "cannot decompose in basis 0 or 1"
@@ -54,6 +56,7 @@ where
 
     pad_zeros(&mut decomp, padding_size);
 
+    // nvtx_timed_pop!();
     decomp
 }
 
@@ -72,11 +75,16 @@ where
     R: Ring + WithSignedRepresentative,
     R::SignedRepresentative: DecompositionFriendlySignedRepresentative,
 {
+    nvtx_timed!("decompose_vec");
+    
     let decomp: Vec<Vec<R>> = v
         .par_iter()
         .map(|v_i| decompose(v_i, b, padding_size))
         .collect(); // v.len() x decomp_size
-    pad_and_transpose(decomp, padding_size) // decomp_size x v.len()
+    let result = pad_and_transpose(decomp, padding_size); // decomp_size x v.len()
+    
+    nvtx_timed_pop!();
+    result
 }
 
 /// Returns the decomposition of a [`PolyRing`] element as a Vec of [`PolyRing`] elements.
@@ -95,10 +103,15 @@ where
     <PR::BaseRing as WithSignedRepresentative>::SignedRepresentative:
         DecompositionFriendlySignedRepresentative,
 {
-    decompose_vec::<PR::BaseRing>(v.coefficients().as_slice(), b, padding_size)
+    // nvtx_timed!("decompose_polyring");
+    
+    let result = decompose_vec::<PR::BaseRing>(v.coefficients().as_slice(), b, padding_size)
         .into_par_iter()
         .map(|v_i| PR::from(v_i))
-        .collect()
+        .collect();
+    
+    // nvtx_timed_pop!();
+    result
 }
 
 /// Returns the decomposition of a slice of [`PolyRing`] elements as a Vec of [`Vector`] of [`PolyRing`] elements.
@@ -121,14 +134,19 @@ where
     <PR::BaseRing as WithSignedRepresentative>::SignedRepresentative:
         DecompositionFriendlySignedRepresentative,
 {
+    nvtx_timed!("decompose_vec_polyring");
+    
     let decomp: Vec<Vec<PR>> = v
         .par_iter()
         .map(|ring_elem| decompose_polyring(ring_elem, b, padding_size))
         .collect(); // v.len() x decomp_size
-    pad_and_transpose(decomp, padding_size)
+    let result = pad_and_transpose(decomp, padding_size)
         .into_par_iter()
         .map(Vector::from)
-        .collect() // decomp_size x v.len()
+        .collect(); // decomp_size x v.len()
+    
+    nvtx_timed_pop!();
+    result
 }
 
 /// Returns the gadget decomposition of a [`Matrix`] of dimensions `m × n` as a matrix of dimensions `m × (k * n)`.
@@ -150,7 +168,9 @@ where
     R: Ring + WithSignedRepresentative,
     R::SignedRepresentative: DecompositionFriendlySignedRepresentative,
 {
-    Matrix::<R>::from_rows(
+    nvtx_timed!("decompose_matrix");
+    
+    let result = Matrix::<R>::from_rows(
         mat.par_row_iter()
             .map(|s_i| {
                 RowVector::<R>::from(
@@ -163,7 +183,10 @@ where
             })
             .collect::<Vec<_>>()
             .as_slice(),
-    )
+    );
+    
+    nvtx_timed_pop!();
+    result
 }
 
 #[cfg(test)]
