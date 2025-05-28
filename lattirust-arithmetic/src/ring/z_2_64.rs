@@ -119,7 +119,7 @@ impl Modulus for Z2_64 {
 }
 
 impl CanonicalSerialize for Z2_64 {
-    #[inline]
+    #[inline(never)]
     fn serialize_with_mode<W: Write>(
         &self,
         mut writer: W,
@@ -128,19 +128,19 @@ impl CanonicalSerialize for Z2_64 {
         Ok(writer.write_all(&self.0 .0.to_le_bytes())?)
     }
 
-    #[inline]
+    #[inline(never)]
     fn serialized_size(&self, _compress: Compress) -> usize {
         core::mem::size_of::<i64>()
     }
 }
 
 impl Valid for Z2_64 {
-    #[inline]
+    #[inline(never)]
     fn check(&self) -> Result<(), SerializationError> {
         Ok(())
     }
 
-    #[inline]
+    #[inline(never)]
     fn batch_check<'a>(_batch: impl Iterator<Item = &'a Self>) -> Result<(), SerializationError>
     where
         Self: 'a,

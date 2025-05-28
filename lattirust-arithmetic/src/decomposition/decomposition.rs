@@ -1,10 +1,10 @@
 use num_bigint::BigUint;
 use num_traits::{One, ToPrimitive, Zero};
 use rayon::prelude::*;
-use crate::{nvtx_timed, nvtx_timed_pop};
 
 use crate::decomposition::pad_zeros;
 use crate::linear_algebra::{Matrix, RowVector, Vector};
+use crate::{nvtx_timed, nvtx_timed_pop};
 use crate::ring::representatives::WithSignedRepresentative;
 use crate::ring::{PolyRing, Ring};
 

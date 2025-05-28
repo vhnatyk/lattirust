@@ -6,10 +6,11 @@ use rayon::prelude::*;
 use crate::linear_algebra::{
     ClosedAddAssign, ClosedMulAssign, Matrix, Scalar, SymmetricMatrix, Vector,
 };
+use crate::{nvtx_timed, nvtx_timed_pop};
 use crate::ring::{PolyRing, Ring};
 
 /// Convert the entries of a lower triangular n x n matrix (in sparse representation) to a vector of length (n*(n+1)) / 2
-#[inline(always)]
+#[inline(never)]
 pub fn vec_from_lowertriang<T>(mut m: VecDeque<VecDeque<T>>) -> Vec<T> {
     debug_assert!(!m.is_empty());
     let mut v = Vec::<T>::with_capacity((m.len() * (m.len() + 1)) / 2);
@@ -28,7 +29,7 @@ pub fn vec_from_lowertriang<T>(mut m: VecDeque<VecDeque<T>>) -> Vec<T> {
 }
 
 /// Convert a vector of length (n*(n+1)) / 2 to the sparse representation of a lower triangular n x n matrix
-#[inline(always)]
+#[inline(never)]
 pub fn lowertriang_from_vec<T>(mut v: VecDeque<T>, n: usize) -> Vec<Vec<T>> {
     debug_assert_eq!(v.len(), n * (n + 1) / 2);
     (0..n)
@@ -36,8 +37,9 @@ pub fn lowertriang_from_vec<T>(mut v: VecDeque<T>, n: usize) -> Vec<Vec<T>> {
         .collect()
 }
 
-#[inline(always)]
+#[inline(never)]
 pub fn lower_triang_indices(n: usize) -> Vec<(usize, usize)> {
+    // track_backtrace!("lower_triang_indices 1");
     let mut indices = Vec::<(usize, usize)>::with_capacity((n * (n + 1)) / 2);
     for i in 0..n {
         for j in 0..i + 1 {
@@ -82,17 +84,20 @@ pub fn inner_products_mat<R: Scalar + ClosedAddAssign + ClosedMulAssign + Zero +
 
 /// Compute $(\langle s_i, t_j\rangle)_{i, j \in \[n\]}$ for $s,t \in R^{n \times m}$
 pub fn inner_products2<R: Ring>(s: &[Vector<R>], t: &[Vector<R>]) -> SymmetricMatrix<R> {
+    nvtx_timed!("inner_products2");
     debug_assert_eq!(s.len(), t.len());
     let ranges = lower_triang_indices(s.len());
 
-    lowertriang_from_vec(
+    let result = lowertriang_from_vec(
         ranges
             .into_par_iter()
             .map(|(i, j)| s[i].dot(&t[j]))
             .collect::<VecDeque<_>>(),
         s.len(),
     )
-    .into()
+    .into();
+    nvtx_timed_pop!();
+    result
 }
 
 #[cfg(test)]

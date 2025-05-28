@@ -1,5 +1,6 @@
 use anyhow::bail;
 use nimue::{Arthur, IOPattern, Merlin, ProofResult};
+use lattirust_arithmetic::{nvtx_timed, nvtx_timed_pop};
 
 use crate::Relation;
 
@@ -45,41 +46,53 @@ where
     where
         <RelationOut as Relation>::Instance: std::fmt::Display,
     {
+        nvtx_timed!("test_completeness");
+        
+        nvtx_timed!("generate_instance");
         let (index_in, instance_in, witness_in) = RelationIn::generate_satisfied_instance(size);
+        nvtx_timed_pop!();
+
+        nvtx_timed!("is_satisfied_err");
         match RelationIn::is_satisfied_err(&index_in, &instance_in, &witness_in) {
             Ok(_) => {}
             Err(e) => {
                 bail!("generated instance is not satisfied: {}", e)
             }
         }
-        let io = Self::iopattern(pp, &index_in, &instance_in);
+        nvtx_timed_pop!();
 
+        let io = Self::iopattern(pp, &index_in, &instance_in);
         let mut merlin = io.to_merlin();
 
+        nvtx_timed!("prove");
         let prover_result = Self::prove(pp, &index_in, &instance_in, &witness_in, &mut merlin);
-
         let (pp_out_prover, instance_out_prover, witness_out) = match prover_result {
             Ok(result) => result,
             Err(e) => {
                 bail!("reduction is not complete; prover failed, returned {}", e)
             }
         };
+        nvtx_timed_pop!();
 
+        nvtx_timed!("is_satisfied_err2");
         let sat = RelationOut::is_satisfied_err(&pp_out_prover, &instance_out_prover, &witness_out);
         if sat.is_err() {
             bail!("reduction is not complete; the output witness is not a valid witness for the output instance and public parameters: {}", sat.err().unwrap());
         }
+        nvtx_timed_pop!();
 
         let proof = merlin.transcript();
         let mut arthur = io.to_arthur(proof);
-        let verifier_result = Self::verify(pp, &index_in, &instance_in, &mut arthur);
 
+        nvtx_timed!("verify");
+        let verifier_result = Self::verify(pp, &index_in, &instance_in, &mut arthur);
         let (pp_out_verifier, instance_out_verifier) = match verifier_result {
             Ok(result) => result,
             Err(e) => {
                 bail!("reduction is not complete; verifier failed, returned {}", e)
             }
         };
+        nvtx_timed_pop!();
 
         if pp_out_prover != pp_out_verifier {
             bail!("reduction is not complete; the prover and verifier output different public parameters");
@@ -88,6 +101,7 @@ where
         if instance_out_prover != instance_out_verifier {
             bail!("reduction is not complete; the prover and verifier output different instances");
         }
+        nvtx_timed_pop!(); // Pop the test_completeness marker
         Ok(())
     }
 

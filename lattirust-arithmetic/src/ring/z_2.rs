@@ -28,7 +28,7 @@ use crate::traits::{FromRandomBytes, Modulus, WithL2Norm, WithLinfNorm};
 
 #[derive(
     Clone, Copy, Debug, Display, From, Into, PartialEq, Eq, Hash, Default, PartialOrd, Ord, Zeroize,
-)]
+)]  
 #[repr(transparent)]
 pub struct Z2(pub(crate) bool);
 
@@ -159,7 +159,7 @@ from_primitive_type!(
 );
 
 impl CanonicalSerialize for Z2 {
-    #[inline]
+    #[inline(never)]
     fn serialize_with_mode<W: Write>(
         &self,
         mut writer: W,
@@ -168,7 +168,7 @@ impl CanonicalSerialize for Z2 {
         Ok(writer.write_all(&self.0.to_bytes().unwrap())?)
     }
 
-    #[inline]
+    #[inline(never)]
     fn serialized_size(&self, _compress: Compress) -> usize {
         core::mem::size_of::<bool>()
     }
@@ -192,12 +192,12 @@ impl CanonicalSerializeWithFlags for Z2 {
 }
 
 impl Valid for Z2 {
-    #[inline]
+    #[inline(never)]
     fn check(&self) -> Result<(), SerializationError> {
         Ok(())
     }
 
-    #[inline]
+    #[inline(never)]
     fn batch_check<'a>(_batch: impl Iterator<Item = &'a Self>) -> Result<(), SerializationError>
     where
         Self: 'a,
@@ -459,6 +459,7 @@ impl PrimeField for Z2 {
     const TRACE_MINUS_ONE_DIV_TWO: Self::BigInt = BigInt::zero();
 
     fn from_bigint(repr: Self::BigInt) -> Option<Self> {
+        //track_backtrace!("from_bigint2");
         match repr.0[0] {
             0 => Some(Self::ZERO),
             1 => Some(Self::ZERO),

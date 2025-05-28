@@ -208,7 +208,7 @@ impl<BaseRing: Ring, const N: usize> FromRandomBytes<Self> for Pow2CyclotomicPol
 }
 
 impl<BaseRing: Ring, const N: usize> Default for Pow2CyclotomicPolyRing<BaseRing, N> {
-    #[inline(always)]
+    #[inline(never)]
     fn default() -> Self {
         Self::zero()
     }
@@ -221,19 +221,19 @@ impl<BaseRing: Ring, const N: usize> Display for Pow2CyclotomicPolyRing<BaseRing
 }
 
 impl<BaseRing: Ring, const N: usize> Zero for Pow2CyclotomicPolyRing<BaseRing, N> {
-    #[inline(always)]
+    #[inline(never)]
     fn zero() -> Self {
         Self::ZERO
     }
 
-    #[inline(always)]
+    #[inline(never)]
     fn is_zero(&self) -> bool {
         self.eq(&Self::ZERO)
     }
 }
 
 impl<BaseRing: Ring, const N: usize> One for Pow2CyclotomicPolyRing<BaseRing, N> {
-    #[inline(always)]
+    #[inline(never)]
     fn one() -> Self {
         Self::ONE
     }

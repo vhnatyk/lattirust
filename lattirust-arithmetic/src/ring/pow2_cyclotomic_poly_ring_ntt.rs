@@ -157,26 +157,26 @@ impl<BaseRing: NttRing<N>, const N: usize> FromRandomBytes<Self>
 }
 
 impl<BaseRing: NttRing<N>, const N: usize> Default for Pow2CyclotomicPolyRingNTT<BaseRing, N> {
-    #[inline(always)]
+    #[inline(never)]
     fn default() -> Self {
         Self::zero()
     }
 }
 
 impl<BaseRing: NttRing<N>, const N: usize> Zero for Pow2CyclotomicPolyRingNTT<BaseRing, N> {
-    #[inline(always)]
+    #[inline(never)]
     fn zero() -> Self {
         Self::ZERO
     }
 
-    #[inline(always)]
+    #[inline(never)]
     fn is_zero(&self) -> bool {
         self.eq(&Self::ZERO)
     }
 }
 
 impl<BaseRing: NttRing<N>, const N: usize> One for Pow2CyclotomicPolyRingNTT<BaseRing, N> {
-    #[inline(always)]
+    #[inline(never)]
     fn one() -> Self {
         Self::ONE
     }

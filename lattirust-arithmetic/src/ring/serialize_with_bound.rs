@@ -5,7 +5,7 @@ pub struct WithBoundedBytes<T> {
 }
 
 // impl WithBoundedBytes<Z2_64> {
-//     #[inline]
+//     #[inline(never)]
 //     pub fn new(value: Z2_64, abs_max: i64) -> Self {
 //         debug_assert!(value.0 .0.abs() as u64 <= abs_max);
 //         Self {

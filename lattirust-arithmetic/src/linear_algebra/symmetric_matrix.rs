@@ -67,12 +67,12 @@ impl<F: Scalar> PartialEq<Matrix<F>> for SymmetricMatrix<F> {
 }
 
 impl<F: Clone> SymmetricMatrix<F> {
-    #[inline]
+    #[inline(never)]
     pub fn size(&self) -> usize {
         self.0.len()
     }
 
-    #[inline]
+    #[inline(never)]
     pub fn at(&self, i: usize, j: usize) -> &F {
         debug_assert!(i < self.0.len() && j < self.0.len());
         if j <= i {
@@ -81,7 +81,7 @@ impl<F: Clone> SymmetricMatrix<F> {
             &self.0[j][i]
         }
     }
-    #[inline]
+    #[inline(never)]
     pub fn at_mut(&mut self, i: usize, j: usize) -> &mut F {
         debug_assert!(i < self.0.len() && j < self.0.len());
         if j <= i {

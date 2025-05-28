@@ -34,7 +34,7 @@ pub trait PolyRing:
 
     fn from_scalar(scalar: Self::BaseRing) -> Self;
 
-    #[inline]
+    #[inline(never)]
     fn x() -> Self {
         Self::from(vec![Self::BaseRing::ZERO, Self::BaseRing::ONE])
     }

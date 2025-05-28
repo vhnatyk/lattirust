@@ -156,7 +156,7 @@ impl<const N: usize, $(const [< Q $l >]: u64,)*> FromRandomBytes for [< Pow2Cycl
 
 impl<const N: usize, $(const [< Q $l >]: u64,)*> Default for [< Pow2CyclotomicPolyRingNTT $L >]<N, $([< Q $l >],)*>
 {
-    #[inline(always)]
+    #[inline(never)]
     fn default() -> Self {
         Self::zero()
     }
@@ -164,12 +164,12 @@ impl<const N: usize, $(const [< Q $l >]: u64,)*> Default for [< Pow2CyclotomicPo
 
 impl<const N: usize, $(const [< Q $l >]: u64,)*> Zero for [< Pow2CyclotomicPolyRingNTT $L >]<N, $([< Q $l >],)*>
 {
-    #[inline(always)]
+    #[inline(never)]
     fn zero() -> Self {
         Self::ZERO
     }
 
-    #[inline(always)]
+    #[inline(never)]
     fn is_zero(&self) -> bool {
         self.eq(&Self::ZERO)
     }
@@ -177,7 +177,7 @@ impl<const N: usize, $(const [< Q $l >]: u64,)*> Zero for [< Pow2CyclotomicPolyR
 
 impl<const N: usize, $(const [< Q $l >]: u64,)*> One for [< Pow2CyclotomicPolyRingNTT $L >]<N, $([< Q $l >],)*>
 {
-    #[inline(always)]
+    #[inline(never)]
     fn one() -> Self {
         Self::ONE
     }

@@ -39,17 +39,17 @@ impl<M: Modulus> SignedRepresentative<M> {
         Self(value, std::marker::PhantomData)
     }
 
-    #[inline]
+    #[inline(never)]
     pub fn modulus() -> BigInt {
         M::modulus().into()
     }
 
-    #[inline]
+    #[inline(never)]
     pub fn min_inclusive() -> BigInt {
         -Self::max_inclusive()
     }
 
-    #[inline]
+    #[inline(never)]
     pub fn max_inclusive() -> BigInt {
         Self::modulus() / 2
     }
