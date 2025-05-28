@@ -4,6 +4,7 @@ use ark_std::rand;
 use ark_std::rand::Rng;
 use ark_std::rand::thread_rng;
 use derive_more::Display;
+use lattirust_arithmetic::{nvtx_timed, nvtx_timed_pop};
 use num_bigint::BigUint;
 use num_traits::{One, ToPrimitive, Zero};
 use serde::Serialize;
@@ -445,6 +446,7 @@ where
         x: &Self::Instance,
         w: &Self::Witness,
     ) -> anyhow::Result<()> {
+        nvtx_timed!("is_satisfied_err");
         Self::is_well_defined_err(i, x, Some(w))?;
 
         let unsat_indices = x
@@ -481,6 +483,7 @@ where
                 x.num_const_constraints()
             ));
         }
+        nvtx_timed_pop!();
         Ok(())
     }
 

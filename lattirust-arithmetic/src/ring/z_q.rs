@@ -477,8 +477,7 @@ impl<'a, C: ZqConfig<L>, const L: usize> core::ops::DivAssign<&'a mut Self> for 
 impl<'a, C: ZqConfig<L>, const L: usize> core::ops::MulAssign<&'a mut Self> for Zq<C, L> {
     #[inline(always)]
     fn mul_assign(&mut self, other: &'a mut Self) {
-        let backtrace = std::backtrace::Backtrace::capture();
-        println!("2 mul_assign Backtrace:\n{}", backtrace);
+        //track_backtrace!("mul_assign");
         self.mul_assign(&*other)
     }
 }
@@ -651,8 +650,7 @@ macro_rules! zq_config_impl {
                 }
 
                 fn mul_assign(a: &mut Zq<Self, $L>, b: &Zq<Self, $L>) {
-                    // let backtrace = std::backtrace::Backtrace::capture();
-                    // println!("1 mul_assign Backtrace:\n{}", backtrace);
+                    //track_backtrace!("1 mul_assign");
                     $(Self::[< FConfig $i >]::mul_assign(&mut a.0.$i, &b.0.$i);)*
                 }
 
@@ -677,6 +675,7 @@ macro_rules! zq_config_impl {
                 }
 
                 fn from_bigint(other: BigInt<$L>) -> Option<Zq<Self, $L>> {
+                    //track_backtrace!("from_bigint3");
                     let biguint = BigUint::from(other);
                     if biguint >= Zq::<Self, $L>::modulus() {
                         return None;

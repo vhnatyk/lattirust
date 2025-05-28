@@ -18,15 +18,15 @@ pub struct NvtxGuard {
 }
 
 impl NvtxGuard {
-    pub fn new(description: &str, indent: usize) -> Self {
-        let indented_desc = format!("{}{}", " ".repeat(indent), description);
-        println!("Starting: {}", indented_desc);
-        range_push!("{}", indented_desc.as_str());
+    pub fn new(description: String) -> Self {
+        let order = TIMING_COUNTER.fetch_add(1, Ordering::SeqCst);
+        println!("Starting: {}", description);
+        range_push!("{}", description.as_str());
         Self {
-            description: indented_desc,
+            description,
             start: Instant::now(),
             popped: false,
-            order: TIMING_COUNTER.fetch_add(1, Ordering::SeqCst),
+            order,
         }
     }
 
@@ -40,7 +40,6 @@ impl NvtxGuard {
     }
 }
 
-// Implement Drop to ensure pop is always called
 impl Drop for NvtxGuard {
     fn drop(&mut self) {
         if !self.popped {
@@ -53,10 +52,9 @@ impl Drop for NvtxGuard {
 
 #[macro_export]
 macro_rules! nvtx_timed {
-    ($desc:expr) => {{
-        let indent = crate::utils2::NVTX_STACK.with(|stack| stack.borrow().len());
-        let guard = crate::utils2::NvtxGuard::new($desc, indent);
-        crate::utils2::NVTX_STACK.with(|stack| {
+    ($description:expr) => {{
+        let guard = $crate::nvtx_timing::NvtxGuard::new($description.to_string());
+        $crate::nvtx_timing::NVTX_STACK.with(|stack| {
             stack.borrow_mut().push(guard);
         });
         // Return a dummy guard that does nothing when dropped
@@ -71,11 +69,11 @@ macro_rules! nvtx_timed {
 
 #[macro_export]
 macro_rules! nvtx_timed_pop {
-    () => {
-        crate::utils2::NVTX_STACK.with(|stack| {
+    () => {{
+        $crate::nvtx_timing::NVTX_STACK.with(|stack| {
             if let Some(mut guard) = stack.borrow_mut().pop() {
                 guard.pop();
             }
         });
-    };
+    }};
 } 
