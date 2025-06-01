@@ -1,4 +1,6 @@
 use ark_ff::{BigInt, Fp, Fp64, MontBackend};
+use std::time::Instant;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::ring::f_p::{fq_zero, Fq, FqConfig};
 use crate::ring::Ring;
@@ -256,6 +258,38 @@ impl<const Q: u64, const N: usize> RootOfUnity<Q, N> {
     const N_INV_MOD_Q: Fq<Q> = const_fq_from(const_inv_mod::<Q>(N as u64));
 }
 
+// Static variables to track total time in nanoseconds
+pub static TOTAL_NTT_TIME: AtomicU64 = AtomicU64::new(0);
+pub static TOTAL_INTT_TIME: AtomicU64 = AtomicU64::new(0);
+pub static NTT_CALLS: AtomicU64 = AtomicU64::new(0);
+pub static INTT_CALLS: AtomicU64 = AtomicU64::new(0);
+
+// Track last printed values
+pub static LAST_PRINTED_NTT_CALLS: AtomicU64 = AtomicU64::new(0);
+pub static LAST_PRINTED_INTT_CALLS: AtomicU64 = AtomicU64::new(0);
+
+// Function to print accumulated times
+pub fn print_ntt_times() {
+    let current_ntt_calls = NTT_CALLS.load(Ordering::Relaxed);
+    let current_intt_calls = INTT_CALLS.load(Ordering::Relaxed);
+    
+    // Only print if counters have changed
+    if current_ntt_calls > LAST_PRINTED_NTT_CALLS.load(Ordering::Relaxed) || 
+       current_intt_calls > LAST_PRINTED_INTT_CALLS.load(Ordering::Relaxed) {
+        println!("NTT Statistics:");
+        println!("  Total NTT time: {:?} ({} calls)", 
+            std::time::Duration::from_nanos(TOTAL_NTT_TIME.load(Ordering::Relaxed)),
+            current_ntt_calls);
+        println!("  Total INTT time: {:?} ({} calls)", 
+            std::time::Duration::from_nanos(TOTAL_INTT_TIME.load(Ordering::Relaxed)),
+            current_intt_calls);
+            
+        // Update last printed values
+        LAST_PRINTED_NTT_CALLS.store(current_ntt_calls, Ordering::Relaxed);
+        LAST_PRINTED_INTT_CALLS.store(current_intt_calls, Ordering::Relaxed);
+    }
+}
+
 impl<const Q: u64, const N: usize> Ntt<N> for Fq<Q> {
     /// Computes the NTT of the given coefficients in place.
     /// Following Algorithm 1 of https://eprint.iacr.org/2016/504.pdf
@@ -263,6 +297,7 @@ impl<const Q: u64, const N: usize> Ntt<N> for Fq<Q> {
     where
         Self: Sized,
     {
+        let start = Instant::now();
         let mut t = N;
         let mut m = 1;
         let mut j1: usize;
@@ -284,12 +319,16 @@ impl<const Q: u64, const N: usize> Ntt<N> for Fq<Q> {
             }
             m *= 2;
         }
+        let duration = start.elapsed();
+        TOTAL_NTT_TIME.fetch_add(duration.as_nanos() as u64, Ordering::Relaxed);
+        NTT_CALLS.fetch_add(1, Ordering::Relaxed);
     }
 
     fn intt_inplace(evals: &mut [Self; N])
     where
         Self: Sized,
     {
+        let start = Instant::now();
         let mut t = 1;
         let mut m = N;
         let mut j1: usize;
@@ -317,6 +356,9 @@ impl<const Q: u64, const N: usize> Ntt<N> for Fq<Q> {
         for evals_i in evals.iter_mut() {
             *evals_i *= RootOfUnity::<Q, N>::N_INV_MOD_Q;
         }
+        let duration = start.elapsed();
+        TOTAL_INTT_TIME.fetch_add(duration.as_nanos() as u64, Ordering::Relaxed);
+        INTT_CALLS.fetch_add(1, Ordering::Relaxed);
     }
 }
 

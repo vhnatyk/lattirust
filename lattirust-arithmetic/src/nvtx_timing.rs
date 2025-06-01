@@ -73,6 +73,11 @@ macro_rules! nvtx_timed_pop {
         $crate::nvtx_timing::NVTX_STACK.with(|stack| {
             if let Some(mut guard) = stack.borrow_mut().pop() {
                 guard.pop();
+                // Print NTT timing statistics only if there were NTT/INTT operations
+                if $crate::ring::ntt::NTT_CALLS.load(std::sync::atomic::Ordering::Relaxed) > 0 || 
+                   $crate::ring::ntt::INTT_CALLS.load(std::sync::atomic::Ordering::Relaxed) > 0 {
+                    $crate::ring::ntt::print_ntt_times();
+                }
             }
         });
     }};
